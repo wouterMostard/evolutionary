@@ -1,27 +1,31 @@
 from typing import List
+import pickle
 
 import numpy as np
 
 from board import Individual
 
 inds: List[Individual] = []
+max_iters = 10000
 
-for i in range(100):
+for i in range(1000):
     inds.append(Individual(n_queens=8))
 
 # Selection, select 2 from the top K fitness and replace this one with a bad one from the bottom P
 max_fitness = 0
 iter_counter = 0
+convergence = []
 
 while True:
     iter_counter += 1
 
-    if iter_counter == 1000:
-        print('did not improve for 1000 iterations, stopping..')
+    if iter_counter == max_iters:
+        print(f'did not improve for {max_iters} iterations, stopping..')
         break
 
     inds: List[Individual] = sorted(inds, reverse=True)
     mean_fitness = np.mean([x.fitness for x in inds])
+    convergence.append(mean_fitness)
 
     print(f'Mean fitness: {mean_fitness}')
 
@@ -32,21 +36,27 @@ while True:
     # Get 2 from the top 10
     item1: Individual
     item2: Individual
-    item1, item2 = np.random.choice(inds[:10], size=2, replace=False)
+    item1, item2 = np.random.choice(inds[:100], size=2, replace=False)
 
     new_item = item1.crossover(item2)
 
-    if item1.fitness != item1.max_fitness:
+    if item1.calculate_fitness() != item1.max_fitness:
         item1.mutate()
 
-    if item2.fitness != item2.max_fitness:
+    if item2.calculate_fitness() != item2.max_fitness:
         item2.mutate()
 
     inds[-1] = new_item
 
-# For each item
+inds[0].print_board()
+inds[0].print_fitness()
 
-# If the fitness is max then we can add this one to the solution and don't mutate
+inds[-1].print_board()
+inds[-1].print_fitness()
 
-for val in inds[:10]:
-    val.print_board()
+# Store the final boards
+with open('./boards.pkl', 'wb') as file:
+    pickle.dump(inds, file)
+convergence = np.array(convergence)
+
+np.save(open('./convergence.npy', 'wb'), convergence)
