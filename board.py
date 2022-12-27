@@ -72,9 +72,24 @@ class Individual:
         
         return diagonal_collides
 
+    def mutate(self) -> None:
+        i, j = np.random.choice(np.arange(0, self.board_size), size=2, replace=False)
+
+        val1 = self.genes[i]
+        self.genes[i] = self.genes[j]
+        self.genes[j] = val1
+
+    def crossover(self, __0: object) -> object:
+        split_point = np.random.randint(0, self.board_size)
+        new_item = Individual(n_queens=self.board_size)
+
+        new_item.genes[:split_point] = __0.genes[:split_point]
+        new_item.genes[split_point:] = self.genes[split_point:]
+
+        return new_item
+
     def print_fitness(self):
-        print(f"Fitness: {self.fitness}, max fitness: {self.max_fitness}")
-        print(f"Genes: {self.col_indices}")
+        print(f"Fitness: {self.fitness:.0f}/{self.max_fitness:.0f}")
 
     def print_board(self):
         print(self.genes.astype(int))
